@@ -1,0 +1,11 @@
+{%- if name -%}
+    {%- if not python -%}
+        {%- if array -%}
+            return [msgspec.convert(item, {{name}} for item in response]
+        {%- else -%}
+            return msgspec.convert(item, {{name}}
+        {%- endif -%}
+    {%- else -%}
+        return response
+    {%- endif -%}
+{%- endif -%}

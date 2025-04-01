@@ -1,0 +1,7 @@
+from typing import BinaryIO
+from msgspec import Struct
+
+class UploadFile(Struct):
+    filename: str
+    content: BinaryIO
+    content_type: str

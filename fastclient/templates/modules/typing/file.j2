@@ -1,0 +1,7 @@
+from typing import BinaryIO
+from typing import TypedDict
+
+class UploadFile(TypedDict):
+    filename: str
+    content: BinaryIO
+    content_type: str

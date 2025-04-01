@@ -1,0 +1,8 @@
+from dataclasses import dataclass
+from typing import BinaryIO
+
+@dataclass
+class UploadFile:
+    filename: str
+    content: BinaryIO
+    content_type: str

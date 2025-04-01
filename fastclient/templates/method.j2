@@ -1,0 +1,37 @@
+    {% if function.async %}async def {% else %}def {% endif %}{{ function.name }}({% if function.arguments %}self, {{ function.arguments }}{%else%}self{% endif %})-> {% if function.annotation %} {{ function.annotation }}{% else%}None{% endif %}:
+        {% if function.serialize %}response = {% endif %}{% if function.async %}await{% endif %} self.client.request(
+            method="{{ request.method.upper() }}",
+            url={% if request.paths %}f"{{ request.url }}"{% else %}"{{ request.url }}"{% endif %},
+            {%- if request.params %}
+            params={
+                {%- for key, value in request.params.items() %}
+                "{{ key }}": {{ value }},
+                {%- endfor %}
+            },
+            {%- endif %}
+            {%- if request.headers %}
+            headers={
+                {%- for key, value in request.headers.items() %}
+                "{{ key }}": {% if "{" in value and "}" in value %}f"{{ value }}"{% else %}"{{ value }}"{% endif %},
+                {%- endfor %}
+            },
+            {%- endif %}
+            {%- if request.json %}
+            json=body,
+            {%- endif %}
+            {%- if request.data %}
+            data=data,
+            {%- endif %}
+            {%- if request.file %}
+            files={"file": (file.filename, file.content, file.content_type)},
+            {%- endif %}
+            {%- if request.files %}
+            files=[(f.filename, f.content, f.content_type) for f in files],
+            {%- endif %}
+            {%- if request.auth %}
+            auth=(username, password),
+            {%- endif %}
+        )
+        {%- if function.serialize %}
+        {{ function.serialize }}
+        {%- endif %}
