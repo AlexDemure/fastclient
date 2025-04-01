@@ -13,7 +13,7 @@
 ## Installation
 
 ```
-pip install fastclient
+pip install fastclientoas
 ```
 
 ## Usage
