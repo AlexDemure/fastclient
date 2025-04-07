@@ -1,7 +1,7 @@
 import tempfile
 from pathlib import Path
 
-from fastclient import const
+from gadhttpclient import const
 
 
 def getfile(content: str, extension: str) -> Path:

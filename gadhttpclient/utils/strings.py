@@ -2,7 +2,7 @@ import re
 
 import tomli
 
-from fastclient import const
+from gadhttpclient import const
 
 
 def separate(value: str) -> list[str]:

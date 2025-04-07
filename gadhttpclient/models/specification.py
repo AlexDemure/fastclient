@@ -69,8 +69,8 @@ from typing import Union
 from pydantic import BaseModel
 from pydantic import Field
 
-from fastclient import const
-from fastclient import enums
+from gadhttpclient import const
+from gadhttpclient import enums
 
 
 class SpecificationReference(BaseModel):

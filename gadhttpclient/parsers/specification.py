@@ -4,14 +4,14 @@ from typing import Dict
 from typing import List
 from typing import Union
 
-from fastclient import const
-from fastclient import enums
-from fastclient import mappers
-from fastclient import models
-from fastclient.os import HTTP
-from fastclient.os import File
-from fastclient.utils import strings
-from fastclient.utils import urls
+from gadhttpclient import const
+from gadhttpclient import enums
+from gadhttpclient import mappers
+from gadhttpclient import models
+from gadhttpclient.os import HTTP
+from gadhttpclient.os import File
+from gadhttpclient.utils import strings
+from gadhttpclient.utils import urls
 
 
 def getcontent(workdir: Path, content: str) -> str:

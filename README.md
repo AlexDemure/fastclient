@@ -1,6 +1,6 @@
 <p align="center">
-  <a href="https://github.com/AlexDemure/fastgenerator">
-    <a href="https://ibb.co/v4xr5yXd"><img src="https://i.ibb.co/JjRbL63p/Frame-1349-3.png" alt="Frame-1349-3" border="0"></a>
+  <a href="https://github.com/AlexDemure/gadhttpclient">
+    <a href="https://ibb.co/XfKN0Dns"><img src="https://i.ibb.co/7xZ8MQ3W/logo.png" alt="logo" border="0"></a>
   </a>
 </p>
 
@@ -13,7 +13,7 @@
 ## Installation
 
 ```
-pip install fastclientoas
+pip install gadhttpclient
 ```
 
 ## Usage
@@ -21,13 +21,13 @@ pip install fastclientoas
 Run the code generation process:
 
 ```sh
-fastclient --file {config.toml} --context "{}"
+gadhttpclient --file {config.toml} --context "{}"
 ```
 
 
 ## Configuration File Guide
 
-Fastclient uses a structured TOML configuration file.
+gadhttpclient uses a structured TOML configuration file.
 
 ### General Structure
 
@@ -67,7 +67,7 @@ check = true
 
 ## Using Dynamic Variables
 
-Fastclient supports dynamic variables in both file paths, contents, and script commands.
+gadhttpclient supports dynamic variables in both file paths, contents, and script commands.
 
 ```toml
 [[clients]]
@@ -76,7 +76,7 @@ path = "src/{{name}}.py
 
 ## Automating Post-Generation Tasks
 
-Fastclient allows you to execute scripts after generating files. These scripts can perform tasks such as formatting, linting, or additional file modifications.
+gadhttpclient allows you to execute scripts after generating files. These scripts can perform tasks such as formatting, linting, or additional file modifications.
 
 #### Example
 ```

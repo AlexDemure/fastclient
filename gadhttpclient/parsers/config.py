@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from fastclient import const
-from fastclient.os import HTTP
-from fastclient.utils import temp
-from fastclient.utils import urls
+from gadhttpclient import const
+from gadhttpclient.os import HTTP
+from gadhttpclient.utils import temp
+from gadhttpclient.utils import urls
 
 
 def getconfig(file: str) -> tuple[Path, bool]:

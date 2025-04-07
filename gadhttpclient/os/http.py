@@ -1,6 +1,6 @@
 import urllib.request
 
-from fastclient import const
+from gadhttpclient import const
 
 
 class HTTP:

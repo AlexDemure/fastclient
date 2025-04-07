@@ -1,4 +1,4 @@
-from fastclient import enums
+from gadhttpclient import enums
 
 MAPPING_TYPE_SPECIFICATION_TO_PYTHON = {
     enums.SpecificationSchemaType.object: enums.PythonType.object,

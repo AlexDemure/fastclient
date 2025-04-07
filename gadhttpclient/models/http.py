@@ -4,7 +4,7 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
-from fastclient import enums
+from gadhttpclient import enums
 
 
 class HTTPProperty(BaseModel):

@@ -9,18 +9,18 @@ from datamodel_code_generator import InputFileType
 from datamodel_code_generator import generate as generate_models
 from jinja2 import Template
 
-from fastclient import const
-from fastclient import enums
-from fastclient import mappers
-from fastclient import models
-from fastclient import parsers
-from fastclient.os import File
-from fastclient.os import Folder
-from fastclient.utils import paths
-from fastclient.utils import strings
-from fastclient.utils import temp
+from gadhttpclient import const
+from gadhttpclient import enums
+from gadhttpclient import mappers
+from gadhttpclient import models
+from gadhttpclient import parsers
+from gadhttpclient.os import File
+from gadhttpclient.os import Folder
+from gadhttpclient.utils import paths
+from gadhttpclient.utils import strings
+from gadhttpclient.utils import temp
 
-app = typer.Typer(help="FastClient")
+app = typer.Typer(help="gadhttpclient")
 
 
 @app.command()
