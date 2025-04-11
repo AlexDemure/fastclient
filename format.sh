@@ -1,3 +1,2 @@
-isort fastgenerator/
-ruff format fastgenerator/ --no-cache
-
+isort gadhttpclient/
+ruff format gadhttpclient/ --no-cache

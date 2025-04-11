@@ -90,7 +90,9 @@ class SpecificationSchema(BaseModel):
     default: Optional[Any] = None
     properties: Optional[Dict[str, Union[SpecificationSchema, SpecificationReference]]] = None
     required: Optional[List[str]] = None
-    items: Optional[Union[SpecificationSchema, SpecificationReference]] = None
+    items: Optional[
+        Union[SpecificationSchema, SpecificationReference, List[Union[SpecificationSchema, SpecificationReference]]]
+    ] = None
     allOf: Optional[List[Union[SpecificationSchema, SpecificationReference]]] = None
     anyOf: Optional[List[Union[SpecificationSchema, SpecificationReference]]] = None
     oneOf: Optional[List[Union[SpecificationSchema, SpecificationReference]]] = None

@@ -2,7 +2,8 @@ from typing import Any
 from typing import Dict
 from typing import List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from pydantic import Field
 
 from gadhttpclient import enums
 

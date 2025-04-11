@@ -4,14 +4,15 @@ from typing import Dict
 from typing import List
 from typing import Union
 
+from gadify import strings
+from gadify import urls
+
 from gadhttpclient import const
 from gadhttpclient import enums
 from gadhttpclient import mappers
 from gadhttpclient import models
 from gadhttpclient.os import HTTP
 from gadhttpclient.os import File
-from gadhttpclient.utils import strings
-from gadhttpclient.utils import urls
 
 
 def getcontent(workdir: Path, content: str) -> str:
@@ -70,7 +71,7 @@ def filtercontent(content: dict, operations: list[str]) -> dict:
 
 
 def parsename(schema: models.SpecificationReference) -> str:
-    return strings.to_pascal(schema.name(schema.ref))
+    return strings.pascal(schema.name(schema.ref))
 
 
 def parsetype(schema: Union[models.SpecificationSchema, models.SpecificationReference]) -> str:
@@ -126,7 +127,7 @@ def parseparams(parameters: List[models.SpecificationPathOperationParameter]) ->
     arguments, headers = [], []
 
     for parameter in parameters:
-        name = strings.to_snake(parameter.name)
+        name = strings.snake(parameter.name)
         annotation = parsemodel(parameter.model)
         required = parameter.required if parameter.required is not None else False
 

@@ -4,9 +4,11 @@ import subprocess
 from pathlib import Path
 
 import typer
-from datamodel_code_generator import DataModelType
 from datamodel_code_generator import InputFileType
 from datamodel_code_generator import generate as generate_models
+from gadify import paths
+from gadify import strings
+from gadify import temp
 from jinja2 import Template
 
 from gadhttpclient import const
@@ -16,9 +18,8 @@ from gadhttpclient import models
 from gadhttpclient import parsers
 from gadhttpclient.os import File
 from gadhttpclient.os import Folder
-from gadhttpclient.utils import paths
-from gadhttpclient.utils import strings
-from gadhttpclient.utils import temp
+from gadhttpclient.utils import sorting
+from gadhttpclient.utils import toml
 
 app = typer.Typer(help="gadhttpclient")
 
@@ -32,7 +33,7 @@ def generate(
 
     file, buffer = parsers.getconfig(file)
 
-    config = strings.to_toml(File.read(file))
+    config = toml.todict(File.read(file))
 
     if buffer:
         file.unlink(missing_ok=True)
@@ -98,7 +99,7 @@ def generate(
                     {
                         "function": {
                             "async": client.get(const.SYNTAX_CLIENTS_ASYNC, True),
-                            "name": operation.operationId,
+                            "name": strings.snake(operation.operationId),
                             "arguments": ", ".join(f"{arg.name}: {arg.annotation}" for arg in function.arguments),
                             "annotation": enums.TypingType.array.wrapp(function.options["response"]["name"])
                             if function.options["response"]["array"]
@@ -130,7 +131,7 @@ def generate(
 
                 File.write(path=path, content=const.SYMBOL_NEWLINE + method, mode=const.FILE_APPEND)
 
-        File.write(path=path, content=strings.sortimports(File.read(path=path, tolist=True)))
+        File.write(path=path, content=sorting.sortimports(File.read(path=path, tolist=True)))
 
     if scripts := config.get(const.SYNTAX_SCRIPTS, []):
         for script in scripts:
