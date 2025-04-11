@@ -1,15 +1,15 @@
-import json
+import pathlib
 import shlex
 import subprocess
-from pathlib import Path
 
+import jinja2
 import typer
 from datamodel_code_generator import InputFileType
 from datamodel_code_generator import generate as generate_models
+from gadify import json
 from gadify import paths
 from gadify import strings
 from gadify import temp
-from jinja2 import Template
 
 from gadhttpclient import const
 from gadhttpclient import enums
@@ -42,14 +42,14 @@ def generate(
 
     Folder.create(workdir)
 
-    context = json.loads(context)
+    context = json.fromjson(context)
 
     context["workdir"] = workdir
 
     clients = config.get(const.SYNTAX_CLIENTS, [])
 
     for client in clients:
-        content = json.loads(parsers.getcontent(workdir=cwd, content=client.get(const.SYNTAX_CLIENTS_CONTENT)))
+        content = json.fromjson(parsers.getcontent(workdir=cwd, content=client.get(const.SYNTAX_CLIENTS_CONTENT)))
 
         if operations := client.get(const.SYNTAX_CLIENTS_OPERATIONS, []):
             content = parsers.filtercontent(content=content, operations=operations)
@@ -61,7 +61,7 @@ def generate(
 
         schema = models.Specification(**content)
 
-        path = workdir / Path(client.get(const.SYNTAX_CLIENTS_PATH))
+        path = workdir / pathlib.Path(client.get(const.SYNTAX_CLIENTS_PATH))
 
         file, buffer = temp.getfile(str(content), extension=const.EXTENSION_JSON), True
 
@@ -78,13 +78,13 @@ def generate(
 
         File.write(
             path=path,
-            content=Template(File.read(Path(const.TEMPLATE_MODEL.format(module=module.name)))).render(),
+            content=jinja2.Template(File.read(pathlib.Path(const.TEMPLATE_MODEL.format(module=module.name)))).render(),
             mode=const.FILE_APPEND,
         )
 
         File.write(
             path=path,
-            content=Template(File.read(Path(const.TEMPLATE_CLIENT))).render(),
+            content=jinja2.Template(File.read(pathlib.Path(const.TEMPLATE_CLIENT))).render(),
             mode=const.FILE_APPEND,
         )
 
@@ -95,7 +95,7 @@ def generate(
 
                 function = parsers.parseoperation(operation)
 
-                method = Template(File.read(Path(const.TEMPLATE_METHOD))).render(
+                method = jinja2.Template(File.read(pathlib.Path(const.TEMPLATE_METHOD))).render(
                     {
                         "function": {
                             "async": client.get(const.SYNTAX_CLIENTS_ASYNC, True),
@@ -104,8 +104,8 @@ def generate(
                             "annotation": enums.TypingType.array.wrapp(function.options["response"]["name"])
                             if function.options["response"]["array"]
                             else function.options["response"]["name"],
-                            "serialize": Template(
-                                File.read(Path(const.TEMPLATE_MODEL_SERIALIZE.format(module=module.name)))
+                            "serialize": jinja2.Template(
+                                File.read(pathlib.Path(const.TEMPLATE_MODEL_SERIALIZE.format(module=module.name)))
                             ).render(function.options["response"]),
                         },
                         "request": {
@@ -137,7 +137,7 @@ def generate(
         for script in scripts:
             if command := script.get(const.SYNTAX_SCRIPTS_COMMAND):
                 subprocess.run(
-                    shlex.split(Template(command).render(context)),
+                    shlex.split(jinja2.Template(command).render(context)),
                     cwd=workdir,
                     text=True,
                     check=script.get(const.SYNTAX_SCRIPTS_CHECK, False),

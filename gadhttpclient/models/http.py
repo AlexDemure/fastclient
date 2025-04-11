@@ -1,21 +1,18 @@
-from typing import Any
-from typing import Dict
-from typing import List
+import typing
 
-from pydantic import BaseModel
-from pydantic import Field
+import pydantic
 
 from gadhttpclient import enums
 
 
-class HTTPProperty(BaseModel):
+class HTTPProperty(pydantic.BaseModel):
     name: str
     annotation: str
     location: enums.HTTPAttribute
     required: bool
 
 
-class HTTPFunction(BaseModel):
-    arguments: List[HTTPProperty]
-    headers: List[HTTPProperty]
-    options: Dict[str, Any] = Field(default_factory=dict)
+class HTTPFunction(pydantic.BaseModel):
+    arguments: typing.List[HTTPProperty]
+    headers: typing.List[HTTPProperty]
+    options: typing.Dict[str, typing.Any] = pydantic.Field(default_factory=dict)

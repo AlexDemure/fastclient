@@ -1,14 +1,14 @@
-from enum import Enum
+import enum
 
 
-class PythonModule(str, Enum):
+class PythonModule(str, enum.Enum):
     pydantic = "pydantic"
     dataclasses = "dataclasses"
     typing = "typing"
     msgspec = "msgspec"
 
 
-class PythonType(str, Enum):
+class PythonType(str, enum.Enum):
     object = "dict"
     array = "list"
     string = "str"

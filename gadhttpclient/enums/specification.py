@@ -1,7 +1,7 @@
-from enum import Enum
+import enum
 
 
-class SpecificationSchemaType(str, Enum):
+class SpecificationSchemaType(str, enum.Enum):
     object = "object"
     array = "array"
     string = "string"
@@ -11,7 +11,7 @@ class SpecificationSchemaType(str, Enum):
     null = "null"
 
 
-class SpecificationSchemaFormat(str, Enum):
+class SpecificationSchemaFormat(str, enum.Enum):
     int32 = "int32"
     int64 = "int64"
     float = "float"
@@ -26,6 +26,6 @@ class SpecificationSchemaFormat(str, Enum):
     uri = "uri"
 
 
-class SpecificationSecurityType(str, Enum):
+class SpecificationSecurityType(str, enum.Enum):
     bearer = "HTTPBearer"
     basic = "HTTPBasic"

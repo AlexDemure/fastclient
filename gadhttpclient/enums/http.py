@@ -1,7 +1,7 @@
-from enum import Enum
+import enum
 
 
-class HTTPMethod(str, Enum):
+class HTTPMethod(str, enum.Enum):
     get = "get"
     post = "post"
     put = "put"
@@ -9,7 +9,7 @@ class HTTPMethod(str, Enum):
     delete = "delete"
 
 
-class HTTPContentType(str, Enum):
+class HTTPContentType(str, enum.Enum):
     json = "application/json"
     form = "application/x-www-form-urlencoded"
     multipart = "multipart/form-data"
@@ -32,7 +32,7 @@ class HTTPContentType(str, Enum):
     webp = "image/webp"
 
 
-class HTTPAttribute(str, Enum):
+class HTTPAttribute(str, enum.Enum):
     header = "header"
     query = "query"
     path = "path"

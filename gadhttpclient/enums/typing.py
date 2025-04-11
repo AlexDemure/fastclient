@@ -1,14 +1,14 @@
-from enum import Enum
-from typing import Optional
+import enum
+import typing
 
 
-class TypingType(str, Enum):
+class TypingType(str, enum.Enum):
     array = "List"
     union = "Union"
     null = "Optional"
     any = "Any"
 
-    def wrapp(self, annotation: Optional[str] = None) -> str:
+    def wrapp(self, annotation: typing.Optional[str] = None) -> str:
         if self in (self.array, self.union):
             return f"{self.value}[{annotation}]"
         elif self is self.null:

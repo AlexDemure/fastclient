@@ -1,8 +1,6 @@
-from http import HTTPStatus
-from pathlib import Path
-from typing import Dict
-from typing import List
-from typing import Union
+import http
+import pathlib
+import typing
 
 from gadify import strings
 from gadify import urls
@@ -15,9 +13,9 @@ from gadhttpclient.os import HTTP
 from gadhttpclient.os import File
 
 
-def getcontent(workdir: Path, content: str) -> str:
+def getcontent(workdir: pathlib.Path, content: str) -> str:
     if content.startswith(const.SYNTAX_FILE):
-        path = Path(content[len(const.SYNTAX_FILE) :].strip())
+        path = pathlib.Path(content[len(const.SYNTAX_FILE) :].strip())
 
         if not path.is_absolute():
             path = workdir / path
@@ -74,7 +72,7 @@ def parsename(schema: models.SpecificationReference) -> str:
     return strings.pascal(schema.name(schema.ref))
 
 
-def parsetype(schema: Union[models.SpecificationSchema, models.SpecificationReference]) -> str:
+def parsetype(schema: typing.Union[models.SpecificationSchema, models.SpecificationReference]) -> str:
     if isinstance(schema, models.SpecificationReference):
         return parsename(schema)
 
@@ -115,7 +113,7 @@ def parseof(schema: models.SpecificationSchema) -> str:
     return annotation
 
 
-def parsemodel(schema: Union[models.SpecificationSchema, models.SpecificationReference]) -> str:
+def parsemodel(schema: typing.Union[models.SpecificationSchema, models.SpecificationReference]) -> str:
     if isinstance(schema, models.SpecificationReference):
         return parsename(schema)
     if schema.anyOf or schema.oneOf or schema.allOf:
@@ -123,7 +121,7 @@ def parsemodel(schema: Union[models.SpecificationSchema, models.SpecificationRef
     return parseschema(schema)
 
 
-def parseparams(parameters: List[models.SpecificationPathOperationParameter]) -> models.HTTPFunction:
+def parseparams(parameters: typing.List[models.SpecificationPathOperationParameter]) -> models.HTTPFunction:
     arguments, headers = [], []
 
     for parameter in parameters:
@@ -160,7 +158,9 @@ def parseparams(parameters: List[models.SpecificationPathOperationParameter]) ->
     return models.HTTPFunction(arguments=arguments, headers=headers)
 
 
-def parsesecurity(security: List[Dict[enums.SpecificationSecurityType, List[str]]]) -> models.HTTPFunction:
+def parsesecurity(
+    security: typing.List[typing.Dict[enums.SpecificationSecurityType, typing.List[str]]],
+) -> models.HTTPFunction:
     arguments, headers, options = [], [], {}
 
     for sec in security:
@@ -287,11 +287,13 @@ def parserequest(request: models.SpecificationPathOperationRequestBody) -> model
     return models.HTTPFunction(arguments=arguments, headers=headers, options=options)
 
 
-def parseresponses(responses: Dict[HTTPStatus, models.SpecificationPathOperationResponse]) -> models.HTTPFunction:
+def parseresponses(
+    responses: typing.Dict[http.HTTPStatus, models.SpecificationPathOperationResponse],
+) -> models.HTTPFunction:
     array = False
     name = None
 
-    for status in (HTTPStatus.OK, HTTPStatus.CREATED, HTTPStatus.ACCEPTED):
+    for status in (http.HTTPStatus.OK, http.HTTPStatus.CREATED, http.HTTPStatus.ACCEPTED):
         if response := responses.get(status):
             if content := response.content:
                 for _, schema in content.items():
@@ -337,7 +339,6 @@ def parseoperation(operation: models.SpecificationPathOperation) -> models.HTTPF
     if security:
         arguments.extend(security.arguments)
         headers.extend(security.headers)
-        # print(security.options)
         options.update(security.options or {})
 
     if parameters:
