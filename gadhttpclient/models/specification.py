@@ -127,7 +127,7 @@ class SpecificationPathOperationResponse(pydantic.BaseModel):
 class SpecificationPathOperation(pydantic.BaseModel):
     tags: typing.Optional[typing.List[str]] = None
     summary: typing.Optional[str] = None
-    operationId: str
+    operationId: typing.Optional[str] = None
     parameters: typing.Optional[
         typing.List[typing.Union[SpecificationPathOperationParameter, SpecificationReference]]
     ] = None
@@ -159,4 +159,4 @@ class Specification(pydantic.BaseModel):
     info: SpecificationInfo
     paths: typing.Dict[str, SpecificationPath]
     components: typing.Optional[SpecificationComponents] = None
-    security: typing.Optional[typing.List[typing.Dict[enums.SpecificationSecurityType, typing.List[str]]]] = None
+    security: typing.Optional[typing.List[typing.Dict[typing.Union[enums.SpecificationSecurityType, str], typing.List[str]]]] = None

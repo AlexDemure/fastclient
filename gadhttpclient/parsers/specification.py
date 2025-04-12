@@ -125,6 +125,16 @@ def parseparams(parameters: typing.List[models.SpecificationPathOperationParamet
     arguments, headers = [], []
 
     for parameter in parameters:
+        if isinstance(parameter, models.SpecificationReference):
+            arguments.append(
+                models.HTTPProperty(
+                    name=parameter.name(parameter.ref),
+                    annotation=enums.PythonType.string.value,
+                    location=enums.HTTPAttribute.query.value,
+                    required=False,
+                )
+            )
+            continue
         name = strings.snake(parameter.name)
         annotation = parsemodel(parameter.model)
         required = parameter.required if parameter.required is not None else False
@@ -304,6 +314,8 @@ def parseresponses(
                                 array = True
                                 if not model[5:-1] in {e.value for e in enums.PythonType}:
                                     name = model[5:-1]
+                            elif model.isdigit():
+                                name = f"Field{model}"
                             elif model not in {e.value for e in enums.PythonType}:
                                 name = model
 

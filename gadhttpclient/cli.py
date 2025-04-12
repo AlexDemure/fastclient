@@ -99,7 +99,7 @@ def generate(
                     {
                         "function": {
                             "async": client.get(const.SYNTAX_CLIENTS_ASYNC, True),
-                            "name": strings.snake(operation.operationId),
+                            "name": strings.snake(operation.operationId) if operation.operationId else strings.snake(operation.summary),
                             "arguments": ", ".join(f"{arg.name}: {arg.annotation}" for arg in function.arguments),
                             "annotation": enums.TypingType.array.wrapp(function.options["response"]["name"])
                             if function.options["response"]["array"]
