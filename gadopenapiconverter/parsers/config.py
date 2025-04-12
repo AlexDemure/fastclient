@@ -3,8 +3,8 @@ import pathlib
 from gadutils import temp
 from gadutils import urls
 
-from gadopenapiconv import const
-from gadopenapiconv.os import HTTP
+from gadopenapiconverter import const
+from gadopenapiconverter.os import HTTP
 
 
 def getconfig(file: str) -> tuple[pathlib.Path, bool]:

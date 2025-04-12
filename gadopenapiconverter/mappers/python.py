@@ -1,6 +1,6 @@
 from datamodel_code_generator import DataModelType
 
-from gadopenapiconv import enums
+from gadopenapiconverter import enums
 
 MAPPING_PYTHON_MODULE_TO_DATAMODEL = {
     enums.PythonModule.pydantic: DataModelType.PydanticBaseModel,

@@ -1,6 +1,6 @@
 <p align="center">
-  <a href="https://github.com/AlexDemure/gadopenapiconv">
-    <a href="https://ibb.co/Gf7HQHwJ"><img src="https://i.ibb.co/nqrPMP20/logo.png" alt="logo" border="0"></a>
+  <a href="https://github.com/AlexDemure/gadopenapiconverter">
+    <a href="https://ibb.co/k6D5VxP6"><img src="https://i.ibb.co/Xk5jfbGk/logo.png" alt="logo" border="0"></a>
   </a>
 </p>
 
@@ -10,19 +10,19 @@
 
 ---
 
-## Installation
+### Installation
 
 ```
-pip install gadopenapiconv
+pip install gadopenapiconverter
 ```
 
-## Usage
+### Usage
 
 ```sh
-gadopenapiconv --file {config.toml} --context "{}"
+gadopenapiconverter --file {config.toml} --context "{}"
 ```
 
-### General Structure
+#### General Structure
 
 ```
 workdir = "myproject"

@@ -11,17 +11,17 @@ from gadutils import paths
 from gadutils import strings
 from gadutils import temp
 
-from gadopenapiconv import const
-from gadopenapiconv import enums
-from gadopenapiconv import mappers
-from gadopenapiconv import models
-from gadopenapiconv import parsers
-from gadopenapiconv.os import File
-from gadopenapiconv.os import Folder
-from gadopenapiconv.utils import sorting
-from gadopenapiconv.utils import toml
+from gadopenapiconverter import const
+from gadopenapiconverter import enums
+from gadopenapiconverter import mappers
+from gadopenapiconverter import models
+from gadopenapiconverter import parsers
+from gadopenapiconverter.os import File
+from gadopenapiconverter.os import Folder
+from gadopenapiconverter.utils import sorting
+from gadopenapiconverter.utils import toml
 
-app = typer.Typer(help="gadopenapiconv")
+app = typer.Typer(help="gadopenapiconverter")
 
 
 @app.command()

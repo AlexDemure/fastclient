@@ -2,7 +2,7 @@ import typing
 
 import pydantic
 
-from gadopenapiconv import enums
+from gadopenapiconverter import enums
 
 
 class HTTPProperty(pydantic.BaseModel):

@@ -5,12 +5,12 @@ import typing
 from gadutils import strings
 from gadutils import urls
 
-from gadopenapiconv import const
-from gadopenapiconv import enums
-from gadopenapiconv import mappers
-from gadopenapiconv import models
-from gadopenapiconv.os import HTTP
-from gadopenapiconv.os import File
+from gadopenapiconverter import const
+from gadopenapiconverter import enums
+from gadopenapiconverter import mappers
+from gadopenapiconverter import models
+from gadopenapiconverter.os import HTTP
+from gadopenapiconverter.os import File
 
 
 def getcontent(workdir: pathlib.Path, content: str) -> str:

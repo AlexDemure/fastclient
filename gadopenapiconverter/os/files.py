@@ -1,6 +1,6 @@
 import pathlib
 
-from gadopenapiconv import const
+from gadopenapiconverter import const
 
 
 class File:

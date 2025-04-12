@@ -1,2 +1,2 @@
-isort gadopenapiconv/
-ruff format gadopenapiconv/ --no-cache
+isort gadopenapiconverter/
+ruff format gadopenapiconverter/ --no-cache

@@ -1,4 +1,4 @@
-from gadopenapiconv import enums
+from gadopenapiconverter import enums
 
 MAPPING_TYPE_SPECIFICATION_TO_PYTHON = {
     enums.SpecificationSchemaType.object: enums.PythonType.object,

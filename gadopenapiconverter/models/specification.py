@@ -64,8 +64,8 @@ import typing
 
 import pydantic
 
-from gadopenapiconv import const
-from gadopenapiconv import enums
+from gadopenapiconverter import const
+from gadopenapiconverter import enums
 
 
 class SpecificationReference(pydantic.BaseModel):

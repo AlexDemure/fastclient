@@ -1,6 +1,6 @@
 import re
 
-from gadopenapiconv import const
+from gadopenapiconverter import const
 
 
 def sortimports(lines: list[str]) -> str:
