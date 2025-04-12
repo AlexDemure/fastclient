@@ -1,6 +1,6 @@
 import re
 
-from gadhttpclient import const
+from gadopenapiconv import const
 
 
 def sortimports(lines: list[str]) -> str:

@@ -1,2 +1,2 @@
-isort gadhttpclient/
-ruff format gadhttpclient/ --no-cache
+isort gadopenapiconv/
+ruff format gadopenapiconv/ --no-cache

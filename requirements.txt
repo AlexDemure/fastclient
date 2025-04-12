@@ -3,4 +3,4 @@ tomli
 jinja2
 pydantic
 datamodel_code_generator
-gadify
+gadutils

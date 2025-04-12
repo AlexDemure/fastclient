@@ -2,15 +2,15 @@ import http
 import pathlib
 import typing
 
-from gadify import strings
-from gadify import urls
+from gadutils import strings
+from gadutils import urls
 
-from gadhttpclient import const
-from gadhttpclient import enums
-from gadhttpclient import mappers
-from gadhttpclient import models
-from gadhttpclient.os import HTTP
-from gadhttpclient.os import File
+from gadopenapiconv import const
+from gadopenapiconv import enums
+from gadopenapiconv import mappers
+from gadopenapiconv import models
+from gadopenapiconv.os import HTTP
+from gadopenapiconv.os import File
 
 
 def getcontent(workdir: pathlib.Path, content: str) -> str:

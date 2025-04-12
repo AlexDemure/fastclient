@@ -1,6 +1,6 @@
 import pathlib
 
-from gadhttpclient import const
+from gadopenapiconv import const
 
 
 class File:

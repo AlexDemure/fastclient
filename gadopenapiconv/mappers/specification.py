@@ -1,4 +1,4 @@
-from gadhttpclient import enums
+from gadopenapiconv import enums
 
 MAPPING_TYPE_SPECIFICATION_TO_PYTHON = {
     enums.SpecificationSchemaType.object: enums.PythonType.object,

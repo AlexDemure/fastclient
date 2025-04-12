@@ -2,7 +2,7 @@ import typing
 
 import pydantic
 
-from gadhttpclient import enums
+from gadopenapiconv import enums
 
 
 class HTTPProperty(pydantic.BaseModel):

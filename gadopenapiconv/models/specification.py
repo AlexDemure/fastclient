@@ -64,8 +64,8 @@ import typing
 
 import pydantic
 
-from gadhttpclient import const
-from gadhttpclient import enums
+from gadopenapiconv import const
+from gadopenapiconv import enums
 
 
 class SpecificationReference(pydantic.BaseModel):
@@ -159,4 +159,6 @@ class Specification(pydantic.BaseModel):
     info: SpecificationInfo
     paths: typing.Dict[str, SpecificationPath]
     components: typing.Optional[SpecificationComponents] = None
-    security: typing.Optional[typing.List[typing.Dict[typing.Union[enums.SpecificationSecurityType, str], typing.List[str]]]] = None
+    security: typing.Optional[
+        typing.List[typing.Dict[typing.Union[enums.SpecificationSecurityType, str], typing.List[str]]]
+    ] = None

@@ -1,6 +1,6 @@
 import urllib.request
 
-from gadhttpclient import const
+from gadopenapiconv import const
 
 
 class HTTP:

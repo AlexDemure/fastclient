@@ -6,22 +6,22 @@ import jinja2
 import typer
 from datamodel_code_generator import InputFileType
 from datamodel_code_generator import generate as generate_models
-from gadify import json
-from gadify import paths
-from gadify import strings
-from gadify import temp
+from gadutils import json
+from gadutils import paths
+from gadutils import strings
+from gadutils import temp
 
-from gadhttpclient import const
-from gadhttpclient import enums
-from gadhttpclient import mappers
-from gadhttpclient import models
-from gadhttpclient import parsers
-from gadhttpclient.os import File
-from gadhttpclient.os import Folder
-from gadhttpclient.utils import sorting
-from gadhttpclient.utils import toml
+from gadopenapiconv import const
+from gadopenapiconv import enums
+from gadopenapiconv import mappers
+from gadopenapiconv import models
+from gadopenapiconv import parsers
+from gadopenapiconv.os import File
+from gadopenapiconv.os import Folder
+from gadopenapiconv.utils import sorting
+from gadopenapiconv.utils import toml
 
-app = typer.Typer(help="gadhttpclient")
+app = typer.Typer(help="gadopenapiconv")
 
 
 @app.command()
@@ -46,22 +46,24 @@ def generate(
 
     context["workdir"] = workdir
 
-    clients = config.get(const.SYNTAX_CLIENTS, [])
+    specifications = config.get(const.SYNTAX_SPECIFICATION, [])
 
-    for client in clients:
-        content = json.fromjson(parsers.getcontent(workdir=cwd, content=client.get(const.SYNTAX_CLIENTS_CONTENT)))
+    for specification in specifications:
+        content = json.fromjson(
+            parsers.getcontent(workdir=cwd, content=specification.get(const.SYNTAX_SPECIFICATION_CONTENT))
+        )
 
-        if operations := client.get(const.SYNTAX_CLIENTS_OPERATIONS, []):
+        if operations := specification.get(const.SYNTAX_SPECIFICATION_OPERATIONS, []):
             content = parsers.filtercontent(content=content, operations=operations)
 
-        if model := client.get(const.SYNTAX_CLIENTS_MODEL):
+        if model := specification.get(const.SYNTAX_SPECIFICATION_MODEL):
             module = enums.PythonModule(model)
         else:
             module = enums.PythonModule.pydantic
 
         schema = models.Specification(**content)
 
-        path = workdir / pathlib.Path(client.get(const.SYNTAX_CLIENTS_PATH))
+        path = workdir / pathlib.Path(specification.get(const.SYNTAX_SPECIFICATION_PATH))
 
         file, buffer = temp.getfile(str(content), extension=const.EXTENSION_JSON), True
 
@@ -98,8 +100,10 @@ def generate(
                 method = jinja2.Template(File.read(pathlib.Path(const.TEMPLATE_METHOD))).render(
                     {
                         "function": {
-                            "async": client.get(const.SYNTAX_CLIENTS_ASYNC, True),
-                            "name": strings.snake(operation.operationId) if operation.operationId else strings.snake(operation.summary),
+                            "async": specification.get(const.SYNTAX_SPECIFICATION_ASYNC, True),
+                            "name": strings.snake(operation.operationId)
+                            if operation.operationId
+                            else strings.snake(operation.summary),
                             "arguments": ", ".join(f"{arg.name}: {arg.annotation}" for arg in function.arguments),
                             "annotation": enums.TypingType.array.wrapp(function.options["response"]["name"])
                             if function.options["response"]["array"]
