@@ -18,8 +18,6 @@ pip install gadopenapiconv
 
 ## Usage
 
-Run the code generation process:
-
 ```sh
 gadopenapiconv --file {config.toml} --context "{}"
 ```
