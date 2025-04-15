@@ -1,7 +1,7 @@
-import enum
+from gadopenapiconverter import typings
 
 
-class SpecificationSchemaType(str, enum.Enum):
+class SpecificationSchemaType(str, typings.Enum):
     object = "object"
     array = "array"
     string = "string"
@@ -11,7 +11,7 @@ class SpecificationSchemaType(str, enum.Enum):
     null = "null"
 
 
-class SpecificationSchemaFormat(str, enum.Enum):
+class SpecificationSchemaFormat(str, typings.Enum):
     int32 = "int32"
     int64 = "int64"
     float = "float"
@@ -26,6 +26,6 @@ class SpecificationSchemaFormat(str, enum.Enum):
     uri = "uri"
 
 
-class SpecificationSecurityType(str, enum.Enum):
+class SpecificationSecurityType(str, typings.Enum):
     bearer = "HTTPBearer"
     basic = "HTTPBasic"

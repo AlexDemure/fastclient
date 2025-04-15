@@ -1,18 +1,15 @@
-import typing
-
 import pydantic
 
-from gadopenapiconverter import enums
 
-
-class HTTPProperty(pydantic.BaseModel):
-    name: str
-    annotation: str
-    location: enums.HTTPAttribute
-    required: bool
-
-
-class HTTPFunction(pydantic.BaseModel):
-    arguments: typing.List[HTTPProperty]
-    headers: typing.List[HTTPProperty]
-    options: typing.Dict[str, typing.Any] = pydantic.Field(default_factory=dict)
+class HTTPRequest(pydantic.BaseModel):
+    method: str
+    url: str
+    paths: list[str]
+    queries: list[str]
+    headers: dict[str, str]
+    upload: bool
+    body: bool
+    data: bool
+    file: bool
+    files: bool
+    auth: bool

@@ -1,22 +1,22 @@
-    {% if function.async %}async def {% else %}def {% endif %}{{ function.name }}({% if function.arguments %}self, {{ function.arguments }}{%else%}self{% endif %})-> {% if function.annotation %} {{ function.annotation }}{% else%}None{% endif %}:
-        {% if function.serialize %}response = {% endif %}{% if function.async %}await{% endif %} self.client.request(
+    {% if function.coroutine %}async def{% else %}def{% endif %} {{ function.name }} ({{ function.arguments }})-> {{function.response}}:
+        {% if function.serialize %}response = {% endif %}{% if function.coroutine %}await{% endif %} self.client.request(
             method="{{ request.method.upper() }}",
             url={% if request.paths %}f"{{ request.url }}"{% else %}"{{ request.url }}"{% endif %},
-            {%- if request.params %}
+            {%- if request.queries %}
             params={
-                {%- for key, value in request.params.items() %}
-                "{{ key }}": {{ value }},
+                {%- for key in request.queries %}
+                "{{ key }}": {{ key }},
                 {%- endfor %}
             },
             {%- endif %}
             {%- if request.headers %}
             headers={
                 {%- for key, value in request.headers.items() %}
-                "{{ key }}": {% if "{" in value and "}" in value %}f"{{ value }}"{% else %}"{{ value }}"{% endif %},
+                "{{ key }}": {{ value }},
                 {%- endfor %}
             },
             {%- endif %}
-            {%- if request.json %}
+            {%- if request.body %}
             json=body,
             {%- endif %}
             {%- if request.data %}
@@ -33,5 +33,5 @@
             {%- endif %}
         )
         {%- if function.serialize %}
-        {{ function.serialize }}
+        return {{ function.serialize }}
         {%- endif %}

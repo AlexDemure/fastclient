@@ -60,105 +60,88 @@ Specification
 from __future__ import annotations
 
 import http
-import typing
 
 import pydantic
 
-from gadopenapiconverter import const
 from gadopenapiconverter import enums
+from gadopenapiconverter import typings
 
 
 class SpecificationReference(pydantic.BaseModel):
     ref: str = pydantic.Field(..., alias="$ref")
 
-    @classmethod
-    def name(cls, value: str) -> str:
-        return value.split(const.SYMBOL_FORWARD_SLASH)[-1]
-
 
 class SpecificationSchema(pydantic.BaseModel):
-    title: typing.Optional[str] = None
-    type: typing.Optional[enums.SpecificationSchemaType] = None
-    format: typing.Optional[enums.SpecificationSchemaFormat] = None
-    enum: typing.Optional[typing.List[typing.Any]] = None
-    description: typing.Optional[str] = None
-    default: typing.Optional[typing.Any] = None
-    properties: typing.Optional[typing.Dict[str, typing.Union[SpecificationSchema, SpecificationReference]]] = None
-    required: typing.Optional[typing.List[str]] = None
-    items: typing.Optional[
-        typing.Union[
-            SpecificationSchema,
-            SpecificationReference,
-            typing.List[typing.Union[SpecificationSchema, SpecificationReference]],
-        ]
-    ] = None
-    allOf: typing.Optional[typing.List[typing.Union[SpecificationSchema, SpecificationReference]]] = None
-    anyOf: typing.Optional[typing.List[typing.Union[SpecificationSchema, SpecificationReference]]] = None
-    oneOf: typing.Optional[typing.List[typing.Union[SpecificationSchema, SpecificationReference]]] = None
-    additionalProperties: typing.Optional[typing.Union[bool, SpecificationSchema, SpecificationReference]] = None
+    title: str | None = None
+    type: enums.SpecificationSchemaType | None = None
+    format: enums.SpecificationSchemaFormat | None = None
+    enum: list[typings.Any] | None = None
+    description: str | None = None
+    default: typings.Any | None = None
+    properties: dict[str, SpecificationSchema | SpecificationReference] | None = None
+    required: list[str] | None = None
+    items: SpecificationSchema | SpecificationReference | list[SpecificationSchema | SpecificationReference] | None = (
+        None
+    )
+    allOf: list[SpecificationSchema | SpecificationReference] | None = None
+    anyOf: list[SpecificationSchema | SpecificationReference] | None = None
+    oneOf: list[SpecificationSchema | SpecificationReference] | None = None
+    additionalProperties: bool | SpecificationSchema | SpecificationReference | None = None
 
 
 class SpecificationContent(pydantic.BaseModel):
-    model: typing.Optional[typing.Union[SpecificationSchema, SpecificationReference]] = pydantic.Field(
-        None, alias="schema"
-    )
+    model: SpecificationSchema | SpecificationReference | None = pydantic.Field(None, alias="schema")
 
 
 class SpecificationPathOperationParameter(pydantic.BaseModel):
     name: str
     location: enums.HTTPAttribute = pydantic.Field(..., alias="in")
-    required: typing.Optional[bool] = None
-    description: typing.Optional[str] = None
-    model: typing.Optional[typing.Union[SpecificationSchema, SpecificationReference]] = pydantic.Field(
-        ..., alias="schema"
-    )
+    required: bool | None = None
+    description: str | None = None
+    model: SpecificationSchema | SpecificationReference | None = pydantic.Field(..., alias="schema")
 
 
 class SpecificationPathOperationRequestBody(pydantic.BaseModel):
-    required: typing.Optional[bool] = None
-    content: typing.Dict[enums.HTTPContentType, SpecificationContent]
+    required: bool | None = None
+    content: dict[enums.HTTPContentType, SpecificationContent]
 
 
 class SpecificationPathOperationResponse(pydantic.BaseModel):
-    description: typing.Optional[str] = None
-    content: typing.Optional[typing.Dict[enums.HTTPContentType, SpecificationContent]] = None
+    description: str | None = None
+    content: dict[enums.HTTPContentType, SpecificationContent] | None = None
 
 
 class SpecificationPathOperation(pydantic.BaseModel):
-    tags: typing.Optional[typing.List[str]] = None
-    summary: typing.Optional[str] = None
-    operationId: typing.Optional[str] = None
-    parameters: typing.Optional[
-        typing.List[typing.Union[SpecificationPathOperationParameter, SpecificationReference]]
-    ] = None
-    requestBody: typing.Optional[typing.Union[SpecificationPathOperationRequestBody, SpecificationReference]] = None
-    responses: typing.Dict[http.HTTPStatus, SpecificationPathOperationResponse]
-    security: typing.Optional[typing.List[typing.Dict[enums.SpecificationSecurityType, typing.List[str]]]] = None
+    tags: list[str] | None = None
+    summary: str | None = None
+    operationId: str | None = None
+    parameters: list[SpecificationPathOperationParameter | SpecificationReference] | None = None
+    requestBody: SpecificationPathOperationRequestBody | SpecificationReference | None = None
+    responses: dict[http.HTTPStatus, SpecificationPathOperationResponse]
+    security: list[dict[enums.SpecificationSecurityType, list[str]]] | None = None
 
 
 class SpecificationPath(pydantic.BaseModel):
-    get: typing.Optional[SpecificationPathOperation] = None
-    post: typing.Optional[SpecificationPathOperation] = None
-    put: typing.Optional[SpecificationPathOperation] = None
-    patch: typing.Optional[SpecificationPathOperation] = None
-    delete: typing.Optional[SpecificationPathOperation] = None
+    get: SpecificationPathOperation | None = None
+    post: SpecificationPathOperation | None = None
+    put: SpecificationPathOperation | None = None
+    patch: SpecificationPathOperation | None = None
+    delete: SpecificationPathOperation | None = None
 
 
 class SpecificationInfo(pydantic.BaseModel):
     title: str
-    description: typing.Optional[str] = None
+    description: str | None = None
     version: str
 
 
 class SpecificationComponents(pydantic.BaseModel):
-    schemas: typing.Optional[typing.Dict[str, typing.Union[SpecificationSchema, SpecificationReference]]] = None
+    schemas: dict[str, SpecificationSchema | SpecificationReference] | None = None
 
 
 class Specification(pydantic.BaseModel):
     openapi: str
     info: SpecificationInfo
-    paths: typing.Dict[str, SpecificationPath]
-    components: typing.Optional[SpecificationComponents] = None
-    security: typing.Optional[
-        typing.List[typing.Dict[typing.Union[enums.SpecificationSecurityType, str], typing.List[str]]]
-    ] = None
+    paths: dict[str, SpecificationPath]
+    components: SpecificationComponents | None = None
+    security: list[dict[enums.SpecificationSecurityType | str], list[str]] | None = None

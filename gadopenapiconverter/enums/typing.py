@@ -1,17 +1,14 @@
-import enum
-import typing
+from gadopenapiconverter import typings
 
 
-class TypingType(str, enum.Enum):
+class TypingType(str, typings.Enum):
     array = "List"
     union = "Union"
     null = "Optional"
     any = "Any"
 
-    def wrapp(self, annotation: typing.Optional[str] = None) -> str:
-        if self in (self.array, self.union):
+    def wrapp(self, annotation: str | None = None) -> str:
+        if self in (self.array, self.union, self.null):
             return f"{self.value}[{annotation}]"
-        elif self is self.null:
-            return f"{self.value}[{annotation}] = None"
         else:
-            return self.value
+            return f"{self.value}"

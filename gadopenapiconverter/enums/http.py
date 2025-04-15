@@ -1,7 +1,7 @@
-import enum
+from gadopenapiconverter import typings
 
 
-class HTTPMethod(str, enum.Enum):
+class HTTPMethod(str, typings.Enum):
     get = "get"
     post = "post"
     put = "put"
@@ -9,7 +9,7 @@ class HTTPMethod(str, enum.Enum):
     delete = "delete"
 
 
-class HTTPContentType(str, enum.Enum):
+class HTTPContentType(str, typings.Enum):
     json = "application/json"
     form = "application/x-www-form-urlencoded"
     multipart = "multipart/form-data"
@@ -32,9 +32,27 @@ class HTTPContentType(str, enum.Enum):
     webp = "image/webp"
 
 
-class HTTPAttribute(str, enum.Enum):
+class HTTPAttribute(str, typings.Enum):
     header = "header"
     query = "query"
     path = "path"
     cookie = "cookie"
     body = "body"
+    file = "file"
+    files = "files"
+    data = "data"
+    auth = "auth"
+
+    @property
+    def priority(self) -> int:
+        return [
+            self.auth,
+            self.cookie,
+            self.header,
+            self.path,
+            self.query,
+            self.body,
+            self.file,
+            self.files,
+            self.data,
+        ].index(self)

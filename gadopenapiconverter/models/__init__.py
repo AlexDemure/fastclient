@@ -1,5 +1,6 @@
-from gadopenapiconverter.models.http import HTTPFunction
-from gadopenapiconverter.models.http import HTTPProperty
+from gadopenapiconverter.models.fields import Field
+from gadopenapiconverter.models.http import HTTPRequest
+from gadopenapiconverter.models.python import PythonFunction
 from gadopenapiconverter.models.specification import Specification
 from gadopenapiconverter.models.specification import SpecificationPathOperation
 from gadopenapiconverter.models.specification import SpecificationPathOperationParameter
@@ -16,6 +17,7 @@ __all__ = [
     "SpecificationPathOperationResponse",
     "SpecificationPathOperationRequestBody",
     "SpecificationPathOperation",
-    "HTTPFunction",
-    "HTTPProperty",
+    "PythonFunction",
+    "HTTPRequest",
+    "Field",
 ]

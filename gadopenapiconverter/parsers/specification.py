@@ -1,375 +1,376 @@
 import http
-import pathlib
-import typing
 
 from gadutils import strings
-from gadutils import urls
 
 from gadopenapiconverter import const
 from gadopenapiconverter import enums
 from gadopenapiconverter import mappers
 from gadopenapiconverter import models
-from gadopenapiconverter.os import HTTP
-from gadopenapiconverter.os import File
+from gadopenapiconverter import typings
+from gadopenapiconverter.utils import codegeneration
+from gadopenapiconverter.utils import specification
 
 
-def getcontent(workdir: pathlib.Path, content: str) -> str:
-    if content.startswith(const.SYNTAX_FILE):
-        path = pathlib.Path(content[len(const.SYNTAX_FILE) :].strip())
-
-        if not path.is_absolute():
-            path = workdir / path
-
-        if path.exists() and path.is_file():
-            return File.read(path)
-
-    elif urls.checkurl(content):
-        return HTTP.download(content)
-
-    return content
-
-
-def filtercontent(content: dict, operations: list[str]) -> dict:
-    paths = content.get(const.SPECIFICATION_PATHS, {})
-    refs = set()
-
-    for path, methods in list(paths.items()):
-        for method, operation in list(methods.items()):
-            if (
-                not isinstance(operation, dict)
-                or operation.get(const.SPECIFICATION_PATH_OPERATION_ID) not in operations
-            ):
-                del methods[method]
-                continue
-
-            stack = [operation]
-            while stack:
-                current = stack.pop()
-                if not isinstance(current, dict):
-                    continue
-                for key, value in current.items():
-                    if key == "$ref" and isinstance(value, str):
-                        refs.add(value)
-                    elif isinstance(value, dict):
-                        stack.append(value)
-                    elif isinstance(value, list):
-                        stack.extend(x for x in value if isinstance(x, dict))
-
-        if not methods:
-            del paths[path]
-
-    if components := content.get(const.SPECIFICATION_COMPONENTS, {}):
-        if schemas := components.get(const.SPECIFICATION_COMPONENTS_SCHEMAS, {}):
-            names = {models.SpecificationReference.name(ref) for ref in refs}
-        content[const.SPECIFICATION_COMPONENTS][const.SPECIFICATION_COMPONENTS_SCHEMAS] = {
-            k: v for k, v in schemas.items() if k in names
-        }
-
-    return content
-
-
-def parsename(schema: models.SpecificationReference) -> str:
-    return strings.pascal(schema.name(schema.ref))
-
-
-def parsetype(schema: typing.Union[models.SpecificationSchema, models.SpecificationReference]) -> str:
-    if isinstance(schema, models.SpecificationReference):
-        return parsename(schema)
-
-    if schema.items:
-        return enums.TypingType.array.wrapp(parsetype(schema.items))
-
-    if schema.format == enums.SpecificationSchemaFormat.binary:
-        return mappers.MAPPING_TYPE_SPECIFICATION_TO_PYTHON[(schema.type, schema.format)].value
+def parsetype(schema: models.SpecificationSchema) -> enums.PythonType:
+    if schema.format is enums.SpecificationSchemaFormat.binary:
+        return mappers.MAPPING_TYPE_SPECIFICATION_TO_PYTHON[(schema.type, schema.format)]
     else:
-        return mappers.MAPPING_TYPE_SPECIFICATION_TO_PYTHON[schema.type].value
+        return mappers.MAPPING_TYPE_SPECIFICATION_TO_PYTHON[schema.type]
 
 
-def parseschema(schema: models.SpecificationSchema) -> str:
-    return (
-        const.SYMBOL_EMPTY
-        if isinstance(schema, models.SpecificationSchema) and schema.type == enums.SpecificationSchemaType.null
-        else parsetype(schema)
-    )
+def parseitems(
+    items: models.SpecificationSchema
+    | models.SpecificationReference
+    | list[models.SpecificationSchema | models.SpecificationReference],
+) -> tuple[list[enums.PythonType], list[typings.Model], typings.Default | None]:
+    default = None
+    python, datamodels = [], []
+
+    if isinstance(items, models.SpecificationReference):
+        datamodels.append(specification.getmodel(items.ref))
+
+    elif isinstance(items, models.SpecificationSchema):
+        datamodels.append(parsetype(items))
+        default = items.default if items.default else default
+
+    elif isinstance(items, list):
+        for item in items:
+            if isinstance(item, models.SpecificationReference):
+                datamodels.append(specification.getmodel(item.ref))
+            else:
+                python.append(parsetype(item))
+                default = item.default if item.default else default
+
+    return python, datamodels, default
 
 
-def parseof(schema: models.SpecificationSchema) -> str:
-    schemas, is_null = [], False
+def parseof(
+    schema: models.SpecificationSchema | models.SpecificationReference,
+) -> tuple[list[enums.PythonType], list[typings.Model], list[enums.TypingType], typings.Default | None]:
+    null = False
+    default = None
+    python, datamodels, wrappers = [], [], []
 
-    for schema in schema.anyOf or schema.oneOf or schema.allOf:
-        if schema := parseschema(schema):
-            schemas.append(schema)
-        else:
-            is_null = True
-
-    annotation = ", ".join(schemas)
-
-    if len(schemas) > 1:
-        annotation = enums.TypingType.union.wrapp(annotation)
-
-    if is_null:
-        annotation = enums.TypingType.null.wrapp(annotation)
-
-    return annotation
-
-
-def parsemodel(schema: typing.Union[models.SpecificationSchema, models.SpecificationReference]) -> str:
     if isinstance(schema, models.SpecificationReference):
-        return parsename(schema)
-    if schema.anyOf or schema.oneOf or schema.allOf:
-        return parseof(schema)
-    return parseschema(schema)
+        datamodels.append(specification.getmodel(schema.ref))
 
+    for item in schema.anyOf or schema.oneOf or schema.allOf:
+        if isinstance(item, models.SpecificationReference):
+            datamodels.append(specification.getmodel(item.ref))
 
-def parseparams(parameters: typing.List[models.SpecificationPathOperationParameter]) -> models.HTTPFunction:
-    arguments, headers = [], []
+        elif isinstance(item, models.SpecificationSchema) and item.type == enums.SpecificationSchemaType.null:
+            null = True
 
-    for parameter in parameters:
-        if isinstance(parameter, models.SpecificationReference):
-            arguments.append(
-                models.HTTPProperty(
-                    name=parameter.name(parameter.ref),
-                    annotation=enums.PythonType.string.value,
-                    location=enums.HTTPAttribute.query.value,
-                    required=False,
-                )
-            )
-            continue
-        name = strings.snake(parameter.name)
-        annotation = parsemodel(parameter.model)
-        required = parameter.required if parameter.required is not None else False
+        elif item.items:
+            _python, _datamodels, _default = parseitems(item.items)
+            python.extend(_python)
+            datamodels.extend(_datamodels)
+            default = _default if _default else default
 
-        if parameter.location == enums.HTTPAttribute.path:
-            required = True
+        else:
+            python.append(parsetype(item))
+            default = item.default if item.default else default
 
-        if not required:
-            if not annotation.startswith(enums.TypingType.null.value):
-                annotation = enums.TypingType.null.wrapp(annotation)
+    if len(python + datamodels) > 1:
+        wrappers.append(enums.TypingType.union)
 
-        argument = models.HTTPProperty(
-            name=name,
-            annotation=annotation,
-            location=parameter.location,
-            required=required,
-        )
+    if null:
+        wrappers.append(enums.TypingType.null)
 
-        if parameter.location == enums.HTTPAttribute.header:
-            headers.append(
-                models.HTTPProperty(
-                    name=parameter.name,
-                    annotation=name,
-                    location=parameter.location,
-                    required=required,
-                )
-            )
-
-        arguments.append(argument)
-
-    return models.HTTPFunction(arguments=arguments, headers=headers)
-
-
-def parsesecurity(
-    security: typing.List[typing.Dict[enums.SpecificationSecurityType, typing.List[str]]],
-) -> models.HTTPFunction:
-    arguments, headers, options = [], [], {}
-
-    for sec in security:
-        for type, _ in sec.items():
-            if type == enums.SpecificationSecurityType.bearer:
-                arguments.append(
-                    models.HTTPProperty(
-                        name=const.HTTP_BEARER_KEY,
-                        annotation=enums.PythonType.string.value,
-                        location=enums.HTTPAttribute.header,
-                        required=True,
-                    )
-                )
-                headers.append(
-                    models.HTTPProperty(
-                        name=const.HTTP_BEARER_HEADER,
-                        annotation=const.HTTP_BEARER_VALUE,
-                        location=enums.HTTPAttribute.header,
-                        required=True,
-                    )
-                )
-            elif type == enums.SpecificationSecurityType.basic:
-                arguments.append(
-                    models.HTTPProperty(
-                        name=const.HTTP_BASIC_USERNAME,
-                        annotation=enums.PythonType.string.value,
-                        location=enums.HTTPAttribute.header,
-                        required=True,
-                    )
-                )
-                arguments.append(
-                    models.HTTPProperty(
-                        name=const.HTTP_BASIC_PASSWORD,
-                        annotation=enums.PythonType.string.value,
-                        location=enums.HTTPAttribute.header,
-                        required=True,
-                    )
-                )
-                options[const.HTTP_BASIC_KEY] = True
-
-    return models.HTTPFunction(arguments=arguments, headers=headers, options=options)
-
-
-def parserequest(request: models.SpecificationPathOperationRequestBody) -> models.HTTPFunction:
-    arguments, headers, options = [], [], {}
-
-    required = request.required if request.required is not None else False
-
-    for content_type, content in request.content.items():
-        model = parsemodel(content.model)
-
-        if not required:
-            if not model.startswith(enums.TypingType.null.value):
-                model = enums.TypingType.null.wrapp(model)
-
-        if content_type is enums.HTTPContentType.json:
-            arguments.append(
-                models.HTTPProperty(
-                    name=const.HTTP_CONTENT_BODY,
-                    annotation=model,
-                    location=enums.HTTPAttribute.body,
-                    required=required,
-                )
-            )
-            headers.append(
-                models.HTTPProperty(
-                    name=const.HTTP_CONTENT_TYPE_HEADER,
-                    annotation=content_type,
-                    location=enums.HTTPAttribute.header,
-                    required=True,
-                )
-            )
-            options[const.HTTP_CONTENT_BODY] = True
-
-        elif content_type is enums.HTTPContentType.multipart:
-            files = False
-
-            if isinstance(content.model, models.SpecificationSchema):
-                if content.model.type == enums.SpecificationSchemaType.array:
-                    files = True
-
-            name = const.HTTP_CONTENT_FILES if files else const.HTTP_CONTENT_FILE
-            annotation = (
-                enums.TypingType.array.wrapp(const.HTTP_CONTENT_FILE_MODEL) if files else const.HTTP_CONTENT_FILE_MODEL
-            )
-
-            if not required:
-                annotation = enums.TypingType.null.wrapp(annotation)
-
-            arguments.append(
-                models.HTTPProperty(
-                    name=name,
-                    annotation=annotation,
-                    location=enums.HTTPAttribute.body,
-                    required=required,
-                )
-            )
-            headers.append(
-                models.HTTPProperty(
-                    name=const.HTTP_CONTENT_TYPE_HEADER,
-                    annotation=enums.HTTPContentType.multipart,
-                    location=enums.HTTPAttribute.header,
-                    required=True,
-                )
-            )
-            options[name] = True
-
-        elif content_type is enums.HTTPContentType.form:
-            arguments.append(
-                models.HTTPProperty(
-                    name=const.HTTP_CONTENT_DATA, annotation=model, location=enums.HTTPAttribute.body, required=required
-                )
-            )
-            headers.append(
-                models.HTTPProperty(
-                    name=const.HTTP_CONTENT_TYPE_HEADER,
-                    annotation=enums.HTTPContentType.form,
-                    location=enums.HTTPAttribute.header,
-                    required=True,
-                )
-            )
-            options[const.HTTP_CONTENT_DATA] = True
-
-    return models.HTTPFunction(arguments=arguments, headers=headers, options=options)
+    return python, datamodels, wrappers, default
 
 
 def parseresponses(
-    responses: typing.Dict[http.HTTPStatus, models.SpecificationPathOperationResponse],
-) -> models.HTTPFunction:
+    responses: dict[http.HTTPStatus, models.SpecificationPathOperationResponse],
+) -> tuple[str | None, bool]:
     array = False
-    name = None
+    response = None, None
+    python, datamodels, wrappers = [], [], []
 
     for status in (http.HTTPStatus.OK, http.HTTPStatus.CREATED, http.HTTPStatus.ACCEPTED):
-        if response := responses.get(status):
-            if content := response.content:
-                for _, schema in content.items():
-                    if model := schema.model:
-                        if not (isinstance(model, models.SpecificationSchema) and model.type is None):
-                            model = parsemodel(model)
-                            if model.startswith(enums.TypingType.array.value):
-                                array = True
-                                if not model[5:-1] in {e.value for e in enums.PythonType}:
-                                    name = model[5:-1]
-                            elif model.isdigit():
-                                name = f"Field{model}"
-                            elif model not in {e.value for e in enums.PythonType}:
-                                name = model
+        if not (response := responses.get(status)):
+            continue
 
-    return models.HTTPFunction(
-        arguments=[],
-        headers=[],
-        options=dict(
-            response=dict(
-                name=name,
-                array=array,
-                python=name in {e.value for e in enums.PythonType},
-            )
-        ),
+        if not (content := response.content):
+            continue
+
+        for _, schema in content.items():
+            if not (model := schema.model):
+                continue
+
+            if isinstance(model, models.SpecificationSchema) and model.type is None:
+                continue
+
+            if isinstance(model, models.SpecificationReference):
+                response = specification.getmodel(model.ref)
+
+            elif isinstance(model, models.SpecificationSchema):
+                if model.anyOf or model.oneOf or model.allOf:
+                    python, datamodels, wrappers, _ = parseof(model)
+                else:
+                    python, datamodels, _ = parseitems(model.items)
+
+                if python:
+                    response = python[0]
+
+                elif datamodels:
+                    response = datamodels[0]
+
+                if wrappers:
+                    for wrapper in wrappers:
+                        response = wrapper.wrapp(response)
+                        if wrapper is enums.TypingType.array:
+                            array = True
+
+            break
+
+    return response, array
+
+
+def parserequest(
+    request: models.SpecificationPathOperationRequestBody,
+) -> tuple[bool, bool, bool, bool, bool, dict[str, str], dict[str, models.Field]]:
+    upload = False
+    default = None
+    body, data, file, files = False, False, False, False
+    headers, arguments = {}, {}
+    python, datamodels, wrappers = [], [], []
+    attribute = enums.HTTPAttribute.body
+    required = request.required if request.required is not None else False
+
+    for content_type, content in request.content.items():
+        headers[const.HTTP_HEADER_CONTENTTYPE] = codegeneration.setstring(content_type.value)
+
+        if content_type is enums.HTTPContentType.json:
+            body = True
+            model = content.model
+            attribute = enums.HTTPAttribute.body
+
+            if isinstance(model, models.SpecificationReference):
+                datamodels.append(specification.getmodel(model.ref))
+
+            elif isinstance(model, models.SpecificationSchema):
+                if model.anyOf or model.oneOf or model.allOf:
+                    python, datamodels, wrappers, default = parseof(model)
+                else:
+                    python, datamodels, default = parseitems(model.items)
+
+            else:
+                python.append(parsetype(model))
+                default = model.default
+
+        elif content_type is enums.HTTPContentType.multipart:
+            model = content.model
+
+            if isinstance(model, models.SpecificationReference):
+                file = True
+                attribute = enums.HTTPAttribute.file
+                datamodels.append(specification.getmodel(model.ref))
+
+            elif isinstance(model, models.SpecificationSchema):
+                upload = True
+                datamodels.append(const.MODEL_UPLOAD_FILE)
+
+                if model.type == enums.SpecificationSchemaType.array:
+                    files = True
+                    attribute = enums.HTTPAttribute.files
+                    wrappers.append(enums.TypingType.array)
+                else:
+                    file = True
+                    attribute = enums.HTTPAttribute.file
+
+        elif content_type is enums.HTTPContentType.form:
+            data = True
+            attribute = enums.HTTPAttribute.data
+            python.append(enums.PythonType.object)
+
+        else:
+            continue
+
+        arguments[attribute.value] = models.Field(
+            required=required,
+            priority=attribute.priority,
+            python=python,
+            wrappers=wrappers,
+            datamodels=datamodels,
+            default=default,
+        )
+
+    return upload, body, data, file, files, headers, arguments
+
+
+def parsesecurity(
+    security: list[dict[enums.SpecificationSecurityType, list[str]]],
+) -> tuple[bool, list[str], dict[str, str], dict[str, models.Field]]:
+    auth = False
+    queries = []
+    headers, arguments = {}, {}
+
+    for _security in security:
+        for _type, _ in _security.items():
+            if _type is enums.SpecificationSecurityType.bearer:
+                headers[const.HTTP_HEADER_BEARER] = codegeneration.setfstring(const.HTTP_HEADER_BEARER_VALUE)
+                arguments[const.HTTP_HEADER_BEARER_KEY] = models.Field(
+                    required=True,
+                    priority=enums.HTTPAttribute.header.priority,
+                    python=[enums.PythonType.string],
+                )
+            elif _type is enums.SpecificationSecurityType.basic:
+                auth = True
+                arguments[const.HTTP_AUTH_USERNAME] = models.Field(
+                    required=True,
+                    priority=enums.HTTPAttribute.auth.priority,
+                    python=[enums.PythonType.string],
+                )
+                arguments[const.HTTP_AUTH_PASSWORD] = models.Field(
+                    required=True,
+                    priority=enums.HTTPAttribute.auth.priority,
+                    python=[enums.PythonType.string],
+                )
+            else:
+                name = strings.snake(_type)
+                queries.append(name)
+                arguments[name] = models.Field(
+                    required=True,
+                    priority=enums.HTTPAttribute.query.priority,
+                    python=[enums.PythonType.string],
+                )
+
+    return auth, queries, headers, arguments
+
+
+def parseparameter(
+    parameter: models.SpecificationPathOperationParameter | models.SpecificationReference,
+) -> tuple[list[str], list[str], dict[str, str], dict[str, models.Field]]:
+    default = None
+    paths, queries = [], []
+    headers, arguments = {}, {}
+    python, datamodels, wrappers = [], [], []
+    required = parameter.required if parameter.required is not None else False
+    name = strings.snake(parameter.name)
+    attribute = enums.HTTPAttribute(parameter.location)
+
+    if isinstance(parameter, models.SpecificationReference):
+        return paths, queries, headers, arguments
+
+    model = parameter.model
+
+    if isinstance(model, models.SpecificationReference):
+        datamodels.append(specification.getmodel(model.ref))
+
+    elif isinstance(model, models.SpecificationSchema):
+        if isinstance(model, models.SpecificationReference):
+            datamodels.append(specification.getmodel(model.ref))
+
+        elif model.anyOf or model.oneOf or model.allOf:
+            python, datamodels, wrappers, default = parseof(model)
+
+        elif model.items:
+            python, datamodels, default = parseitems(model.items)
+
+        else:
+            python.append(parsetype(model))
+            default = model.default
+
+    arguments[name] = models.Field(
+        required=required,
+        priority=attribute.priority,
+        python=python,
+        wrappers=wrappers,
+        datamodels=datamodels,
+        default=default,
     )
 
+    if attribute is enums.HTTPAttribute.header:
+        headers[parameter.name] = name
+    elif attribute is enums.HTTPAttribute.path:
+        paths.append(name)
+    elif attribute is enums.HTTPAttribute.query:
+        queries.append(name)
 
-def parseoperation(operation: models.SpecificationPathOperation) -> models.HTTPFunction:
-    security, parameters, request, response = None, None, None, None
-    arguments, headers = [], []
-    options = {}
+    return paths, queries, headers, arguments
+
+
+def parseoperation(
+    coroutine: bool,
+    client: enums.PythonModule,
+    model: enums.PythonModule,
+    path: str,
+    method: enums.HTTPMethod,
+    operation: models.SpecificationPathOperation,
+) -> tuple[models.HTTPRequest, models.PythonFunction]:
+    upload, auth, body, data, file, files = False, False, False, False, False, False
+    paths, queries = [], []
+    headers, arguments = {}, {}
+    name = strings.snake(operation.operationId) if operation.operationId else strings.snake(operation.summary)
 
     if operation.security:
-        security = parsesecurity(operation.security)
+        _auth, _queries, _headers, _arguments = parsesecurity(operation.security)
+        auth = _auth
+        queries.extend(_queries)
+        headers.update(_headers)
+        arguments.update(_arguments)
 
     if operation.parameters:
-        parameters = parseparams(operation.parameters)
+        for parameter in operation.parameters:
+            _paths, _queries, _headers, _arguments = parseparameter(parameter)
+            paths.extend(_paths)
+            queries.extend(_queries)
+            headers.update(_headers)
+            arguments.update(_arguments)
 
     if operation.requestBody:
-        request = parserequest(operation.requestBody)
+        _upload, _body, _data, _file, _files, _headers, _arguments = parserequest(operation.requestBody)
+        upload = _upload
+        body = _body
+        data = _data
+        file = _file
+        files = _files
+        headers.update(_headers)
+        arguments.update(_arguments)
 
-    response = parseresponses(operation.responses)
+    response, array = parseresponses(operation.responses)
 
-    if security:
-        arguments.extend(security.arguments)
-        headers.extend(security.headers)
-        options.update(security.options or {})
+    function = models.PythonFunction(
+        coroutine=coroutine,
+        name=name,
+        arguments=codegeneration.makearguments(
+            sorted(
+                arguments.items(),
+                key=lambda item: (item[1].required, item[1].priority),
+                reverse=True,
+            )
+        ),
+        response=response,
+        serialize=codegeneration.makeserialize(client, model, response, array),
+    )
 
-    if parameters:
-        arguments.extend([arg for arg in parameters.arguments if arg.location == enums.HTTPAttribute.path])
-        arguments.extend(
-            [arg for arg in parameters.arguments if arg.location == enums.HTTPAttribute.query and arg.required]
-        )
-        headers.extend(parameters.headers)
+    request = models.HTTPRequest(
+        method=method,
+        url=path,
+        paths=paths,
+        queries=queries,
+        headers=headers,
+        upload=upload,
+        body=body,
+        data=data,
+        file=file,
+        files=files,
+        auth=auth,
+    )
 
-    if request:
-        arguments.extend(request.arguments)
-        headers.extend(request.headers)
-        options.update(request.options or {})
+    return request, function
 
-    if parameters:
-        arguments.extend(
-            [arg for arg in parameters.arguments if arg.location == enums.HTTPAttribute.query and not arg.required]
-        )
 
-    options.update(response.options)
-
-    return models.HTTPFunction(arguments=arguments, headers=headers, options=options)
+def parsespecification(
+    coroutine: bool,
+    client: enums.PythonModule,
+    model: enums.PythonModule,
+    spec: models.Specification,
+) -> list[tuple[models.HTTPRequest, models.PythonFunction]]:
+    operations = []
+    for path, item in spec.paths.items():
+        for method in enums.HTTPMethod:
+            if operation := getattr(item, method):
+                operations.append(parseoperation(coroutine, client, model, path, method, operation))
+    return operations
