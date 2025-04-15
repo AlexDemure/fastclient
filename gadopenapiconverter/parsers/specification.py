@@ -58,7 +58,7 @@ def parseof(
         if isinstance(item, models.SpecificationReference):
             datamodels.append(specification.getmodel(item.ref))
 
-        elif isinstance(item, models.SpecificationSchema) and item.type == enums.SpecificationSchemaType.null:
+        elif isinstance(item, models.SpecificationSchema) and item.type is enums.SpecificationSchemaType.null:
             null = True
 
         elif item.items:
@@ -171,7 +171,7 @@ def parserequest(
                 upload = True
                 datamodels.append(const.MODEL_UPLOAD_FILE)
 
-                if model.type == enums.SpecificationSchemaType.array:
+                if model.type is enums.SpecificationSchemaType.array:
                     files = True
                     attribute = enums.HTTPAttribute.files
                     wrappers.append(enums.TypingType.array)
@@ -246,9 +246,6 @@ def parseparameter(
     paths, queries = [], []
     headers, arguments = {}, {}
     python, datamodels, wrappers = [], [], []
-    required = parameter.required if parameter.required is not None else False
-    name = strings.snake(parameter.name)
-    attribute = enums.HTTPAttribute(parameter.location)
 
     if isinstance(parameter, models.SpecificationReference):
         return paths, queries, headers, arguments
@@ -271,6 +268,10 @@ def parseparameter(
         else:
             python.append(parsetype(model))
             default = model.default
+
+    required = parameter.required if parameter.required is not None else False
+    attribute = enums.HTTPAttribute(parameter.location)
+    name = strings.snake(parameter.name)
 
     arguments[name] = models.Field(
         required=required,

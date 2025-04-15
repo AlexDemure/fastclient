@@ -103,7 +103,10 @@ def generate(
         for request, function in operations:
             File.write(
                 path=path,
-                content=jinja2.Template(File.read(pathlib.Path(const.TEMPLATE_METHOD))).render(function, request),
+                content=const.SYMBOL_NEWLINE
+                + jinja2.Template(File.read(pathlib.Path(const.TEMPLATE_METHOD))).render(
+                    function=function.model_dump(), request=request.model_dump()
+                ),
                 mode=const.FILE_APPEND,
             )
 

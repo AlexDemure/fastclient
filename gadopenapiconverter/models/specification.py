@@ -144,4 +144,4 @@ class Specification(pydantic.BaseModel):
     info: SpecificationInfo
     paths: dict[str, SpecificationPath]
     components: SpecificationComponents | None = None
-    security: list[dict[enums.SpecificationSecurityType | str], list[str]] | None = None
+    security: list[dict[enums.SpecificationSecurityType | str, list[str]]] | None = None

@@ -41,19 +41,19 @@ check = true
 ```
 
 ### Sections Overview
-| Section              | Format                               | Description                                                                   |   |   |
-|----------------------|--------------------------------------|-------------------------------------------------------------------------------|---|---|
-| `workdir`            | `""`                                 | Uses the current directory                                                    |   |   |
-|                      | `"myproject"`                        | Uses the current directory + `/myproject`                                     |   |   |
-|                      | `"/home/myproject"`                  | Uses an absolute path                                                         |   |   |
-| `[[specifications]]` |                                      | Defines file creation rules                                                   |   |   |
-|                      | `mode = "a"`                         | File writing mode: `"a"` (append), `"w"` (overwrite)                          |   |   |
-|                      | `path = "src/__init__.py"`           | Relative to workdir, specifies file location.                                 |   |   |
-|                      | `content = """ ... """ / path / url` | Raw content, local file path, or URL for remote content.                      |   |   |
-|                      | `model = "pydantic"`                 | Type of models created (pydantic, dataclasses, typing, msgspec)               |   |   |
-|                      | `client = "httpx"`                   | Type of http-client created (requests, httpx, aiohttp, urllib, urllib3, http) |   |   |
-|                      | `async = "true"`                     | Type of methods (true, false)                                                 |   |   |
-|                      | `operations = []`                    | Filtering methods by operation_id                                             |   |   |
-| `[[scripts]]`        |                                      | Defines commands to be executed after generation.                             |   |   |
-|                      | `command = "isort {{workdir}}"`      | Command to execute, supports dynamic variables.                               |   |   |
-|                      | `check = True\False"`                | If true, raises an error if the command fails, otherwise logs output.         |   |   |
+| Section              | Format                               | Description                                                                           |   |   |
+|----------------------|--------------------------------------|---------------------------------------------------------------------------------------|---|---|
+| `workdir`            | `""`                                 | Uses the current directory                                                            |   |   |
+|                      | `"myproject"`                        | Uses the current directory + `/myproject`                                             |   |   |
+|                      | `"/home/myproject"`                  | Uses an absolute path                                                                 |   |   |
+| `[[specifications]]` |                                      | Defines file creation rules                                                           |   |   |
+|                      | `mode = "a"`                         | File writing mode: `"a"` (append), `"w"` (overwrite)                                  |   |   |
+|                      | `path = "src/__init__.py"`           | Relative to workdir, specifies file location.                                         |   |   |
+|                      | `content = """ ... """ / path / url` | Raw content, local file path, or URL for remote content.                              |   |   |
+|                      | `model = "pydantic"`                 | Type of models created (pydantic, dataclasses, typing, msgspec)                       |   |   |
+|                      | `client = "httpx"`                   | Type of http-client created (requests, httpx, aiohttp, urllib, urllib3, http.client)  |   |   |
+|                      | `async = "true"`                     | Type of methods (true, false)                                                         |   |   |
+|                      | `operations = []`                    | Filtering methods by operation_id                                                     |   |   |
+| `[[scripts]]`        |                                      | Defines commands to be executed after generation.                                     |   |   |
+|                      | `command = "isort {{workdir}}"`      | Command to execute, supports dynamic variables.                                       |   |   |
+|                      | `check = True\False"`                | If true, raises an error if the command fails, otherwise logs output.                 |   |   |

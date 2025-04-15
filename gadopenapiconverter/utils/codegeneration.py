@@ -23,6 +23,21 @@ def setfstring(string: str) -> str:
     return f"f'{string}'"
 
 
+def makeannotation(field: models.Field) -> str:
+    annotation = const.SYMBOL_COMMA.join(field.python + field.datamodels)
+
+    if field.wrappers:
+        for wrapper in field.wrappers:
+            annotation = settyping(wrapper.wrapp(annotation))
+
+    if field.default:
+        return setdefault(annotation, field.default)
+    elif not field.required:
+        return setempty(annotation)
+
+    return annotation
+
+
 def makearguments(arguments: list[tuple[str, models.Field]]) -> str:
     string = "self"
 
@@ -31,7 +46,7 @@ def makearguments(arguments: list[tuple[str, models.Field]]) -> str:
 
     for argument in arguments:
         for key, value in argument:
-            string += f"{const.SYMBOL_COMMA}{const.SYMBOL_WHITESPACE}{key}: {value.string}"
+            string += f"{const.SYMBOL_COMMA}{const.SYMBOL_WHITESPACE}{key}: {makeannotation(value)}"
 
     return string
 

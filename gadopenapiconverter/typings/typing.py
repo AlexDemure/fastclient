@@ -1,3 +1,4 @@
 import typing
 
-Default = Any = typing.Any
+Any = typing.Any
+Default = typing.Any
