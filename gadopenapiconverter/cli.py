@@ -6,10 +6,6 @@ import jinja2
 import typer
 from datamodel_code_generator import InputFileType
 from datamodel_code_generator import generate as generate_models
-from gadutils import json
-from gadutils import paths
-from gadutils import temp
-
 from gadopenapiconverter import const
 from gadopenapiconverter import enums
 from gadopenapiconverter import mappers
@@ -20,6 +16,9 @@ from gadopenapiconverter.os import Folder
 from gadopenapiconverter.utils import files
 from gadopenapiconverter.utils import specification
 from gadopenapiconverter.utils import toml
+from gadutils import json
+from gadutils import paths
+from gadutils import temp
 
 app = typer.Typer(help="gadopenapiconverter")
 

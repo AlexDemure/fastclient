@@ -1,5 +1,4 @@
 import pydantic
-
 from gadopenapiconverter import enums
 from gadopenapiconverter import typings
 

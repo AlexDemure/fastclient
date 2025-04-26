@@ -1,11 +1,10 @@
 import pathlib
 
 import tomli
-from gadutils import temp
-from gadutils import urls
-
 from gadopenapiconverter import const
 from gadopenapiconverter.os import HTTP
+from gadutils import temp
+from gadutils import urls
 
 
 def todict(content: str) -> dict:

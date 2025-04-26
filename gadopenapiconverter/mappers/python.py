@@ -1,5 +1,4 @@
 from datamodel_code_generator import DataModelType
-
 from gadopenapiconverter import enums
 
 MAPPING_PYTHON_MODULE_TO_DATAMODEL = {

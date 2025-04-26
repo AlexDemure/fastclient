@@ -1,9 +1,8 @@
 import copy
 
-from gadutils import strings
-
 from gadopenapiconverter import const
 from gadopenapiconverter import typings
+from gadutils import strings
 
 
 def getmodel(ref: str) -> str:

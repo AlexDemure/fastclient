@@ -1,7 +1,5 @@
 import http
 
-from gadutils import strings
-
 from gadopenapiconverter import const
 from gadopenapiconverter import enums
 from gadopenapiconverter import mappers
@@ -9,6 +7,7 @@ from gadopenapiconverter import models
 from gadopenapiconverter import typings
 from gadopenapiconverter.utils import codegeneration
 from gadopenapiconverter.utils import specification
+from gadutils import strings
 
 
 def parsetype(schema: models.SpecificationSchema) -> enums.PythonType:

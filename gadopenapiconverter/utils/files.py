@@ -1,11 +1,10 @@
 import pathlib
 import re
 
-from gadutils import urls
-
 from gadopenapiconverter import const
 from gadopenapiconverter.os import HTTP
 from gadopenapiconverter.os import File
+from gadutils import urls
 
 
 def sortimports(lines: list[str]) -> str:

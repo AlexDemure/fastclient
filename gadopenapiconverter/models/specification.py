@@ -62,7 +62,6 @@ from __future__ import annotations
 import http
 
 import pydantic
-
 from gadopenapiconverter import enums
 from gadopenapiconverter import typings
 
